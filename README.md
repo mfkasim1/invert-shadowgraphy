@@ -9,7 +9,7 @@ It contains two main files:
 
 In this code, I am using a normalised unit, where every pixel has size of 1 x 1, the distance from the object to the screen is 1, and the magnification is 1.
 The normalised deflection potential ($\Phi$) and the deflection potential in normal units ($Phi_N$) are related by
-$$
-\Phi_N = \Phi * 1/L * l_{pix}^2 * M,
-$$
-where $L$ is the distance between the object and the screen, $l_{pix}$ is the pixel size on the object plane, and $M$ is the magnification.
+
+![equation](http://www.sciweavers.org/tex2img.php?eq=%5CPhi_N%20%3D%20%5CPhi%20%2A%201%2FL%20%2A%20l_%7Bpix%7D%5E2%20%2A%20M%2C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+
+where L is the distance between the object and the screen, lpix is the pixel size on the object plane, and M is the magnification.
