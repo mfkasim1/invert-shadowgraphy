@@ -7,8 +7,8 @@
 %   * Width and height of each pixel must be 1
 %   * Bottom left corner is (0,0)
 % Input:
-%   * x0: the x-coordinates of the polygon's points 
-%   * y0: the y-coordinates of the polygon's points 
+%   * x0: the x-coordinates of the polygon's points (nP x 1)
+%   * y0: the y-coordinates of the polygon's points (nP x 1)
 % Output:
 %   * xl: the x-coordinates of the pixels that are crossed by the polygon's edges (numL x 1)
 %   * yl: the y-coordinates of the pixels that are crossed by the polygon's edges (numL x 1)
