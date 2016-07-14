@@ -160,7 +160,7 @@ function invert_shadowgraphy(filename, varargin)
     
     disp('Retrieving the deflection potential from the source and target maps');
     bbbb = tic;
-    [PhiI, sitesI, w] = main_inverse_extended(sourceMap, targetMap, options.num_sites, options.algorithm);
+    [PhiI, sitesI, w] = main_inverse_extended(sourceMap, targetMap, options.num_sites, options.algorithm, 1);
     main_inverse_time = toc(bbbb);
     
     disp('Getting the reconstructed image from the retrieved potential');

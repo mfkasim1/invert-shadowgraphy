@@ -18,7 +18,6 @@ function [Px, Py, Ap] = weighted_lloyds_algorithm(Px0, Py0, valMap, options)
     Px = Px0;
     Py = Py0;
     for (i = [1:maxIter+1])
-        disp(i);
         [V, C] = power_bounded(Px, Py, zeros([size(Px0,1),1]), crs);
         
         Ap = zeros([length(C),1]);

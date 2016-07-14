@@ -7,18 +7,33 @@
 % Input:
 %   * sourceMap: intensity profile on the source plane (Ny x Nx)
 %   * targetMap: intensity profile on the target plane (Ny x Nx)
-%   * num_sites: number of sites
-%   * algorithm: 'lbfgs' or 'quasi-newton'
+%   * num_sites: number of sites (default: floor(0.8 * numel(targetMap)))
+%   * algorithm: 'lbfgs' or 'quasi-newton' (default: 'lbfgs' if numel <= 4x10^4, else 'quasi-newton')
+%   * verbose: flag to indicate whether to print message and show image or not (default: 0):
+%              0 - no message and no processing images shown
+%              1 - shows messages, without images
+%              2 - shows messages and images
 % Output:
 %   * Phi: deflection potential according to the equation above (Ny x Nx)
 %   * sites: sampling sites from the sourceMap using Lloyd's algorithm (numPoints x 3)
+%   * w: weights for each site in the resulting power diagram (numPoints x 1)
 % Assumptions:
 %   * Normalised coordinate: the first index is (1,1) and all pixels have size of 1
 %   * sourcemap and targetMap must have the same size
 %   * total intensity on the sourceMap and targetMap must equal to 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites, algorithm)
+function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites, algorithm, verbose)
+    % default parameters
+    if nargin < 3
+        num_sites = floor(0.8 * numel(targetMap));
+    elseif nargin < 4
+        if (numel(targetMap) <= 40000) algorithm = 'quasi-newton';
+        else algorithm = 'lbfgs'; end;
+    elseif nargin < 5
+        verbose = 0;
+    end
+    
     % getting the basic parameters for this algorithm
     [Ny, Nx] = size(targetMap);
     [X,Y] = meshgrid([1:Nx], [1:Ny]);
@@ -27,7 +42,7 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
     
     % get the sites on the sourceMap
     % sample the source map using rejection algorithm and Lloyd's algorithm
-    disp('Sampling the source map');
+    if (verbose) disp('Sampling the source map'); end
     lloydsOptions = NaN;
     [Px0, Py0] = initial_random_sample(N, sourceMap);
     [Px , Py , Ap] = weighted_lloyds_algorithm(Px0, Py0, sourceMap, lloydsOptions);
@@ -40,14 +55,19 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
     sites(:,3) = lambdap;
     
     % use gradient descent to determine the optimal weight for optimal transport map
-    disp('Getting the optimal transport map');
-    fun = @(w) penalty_function(p, lambdap, targetMap, w);
+    if (verbose) disp('Getting the optimal transport map'); end;
+    fun = @(w) penalty_function(p, lambdap, targetMap, w, verbose);
     w0 = zeros([N,1]);
-    options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'GradObj', 'on', 'Display', 'Iter'); % quasi-newton
     if (strcmp(algorithm, 'quasi-newton'))
+        if (verbose) displayOpt = 'iter'; 
+        else displayOpt = 'none'; end
+        options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'GradObj', 'on', 'Display', displayOpt, 'MaxIter', 200); % quasi-newton
         w = fminunc(fun, w0, options);
     elseif (strcmp(algorithm, 'lbfgs'))
-        w = minFunc(fun, w0); % l-bfgs
+        if (verbose) options.Display = 1;
+        else options.Display = 0; end;
+        options.MaxIter = 200;
+        w = minFunc(fun, w0, options); % l-bfgs
     end
     
     % determine the weighted centroid of each power cell
@@ -91,14 +111,14 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
     end
     
     % interpolate and extrapolate for xMap and yMap
-    disp('Interpolating the transportation map');
+    if (verbose) disp('Interpolating the transportation map'); end
     Fx = scatteredInterpolant(ps(:,1), ps(:,2), pt(:,1), 'natural', 'linear');
     Fy = scatteredInterpolant(ps(:,1), ps(:,2), pt(:,2), 'natural', 'linear');
     xMap = Fx(X+0.5,Y+0.5);
     yMap = Fy(X+0.5,Y+0.5);
     
     % get the deflection angle
-    disp('Calculating the deflection potential');
+    if (verbose) disp('Calculating the deflection potential'); end
     alphax = xMap - (X+0.5);
     alphay = yMap - (Y+0.5);
     
@@ -111,5 +131,5 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
     PhiX = -bsxfun(@plus, cumsumX, cumsumY(:,pZero(2)));
     PhiY = -bsxfun(@plus, cumsumY, cumsumX(pZero(1),:));
     Phi = (PhiX + PhiY)/2;
-    disp('Done!');
+    if (verbose) disp('Done!'); end;
 end

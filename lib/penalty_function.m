@@ -13,8 +13,10 @@
 %   * For all i: 1 <= p(i,2) < size(targetDensity,2)+1 and 1 <= p(i,1) < size(targetDensity,1)+1
 %   * sum(targetDensity(:)) == sum(lambdap)
 
-function [Phi, delPhi] = penalty_function(p, lambdap, targetDensity, weights)
-    showImage = 1;
+function [Phi, delPhi] = penalty_function(p, lambdap, targetDensity, weights, verbose)
+    if nargin < 5
+        verbose = 0;
+    end
     
     % get the rectangle bound
     [Ny, Nx] = size(targetDensity);
@@ -50,7 +52,7 @@ function [Phi, delPhi] = penalty_function(p, lambdap, targetDensity, weights)
         Ip(i) = Ix0;
     end
     
-    if (showImage)
+    if (verbose == 2)
         close all;
         figure;
         imagesc([1:Nx]+0.5, [1:Ny]+0.5, targetDensity); hold on;
