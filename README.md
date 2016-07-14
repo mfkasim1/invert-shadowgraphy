@@ -19,3 +19,5 @@ The codes contain other codes from:
 * https://uk.mathworks.com/matlabcentral/fileexchange/34428-voronoilimit
 * https://uk.mathworks.com/matlabcentral/fileexchange/44385-power-diagrams
 * https://www.cs.ubc.ca/~schmidtm/Software/minFunc.html
+
+License for non-commercial and non-military uses.
