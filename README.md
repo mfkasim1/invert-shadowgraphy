@@ -4,8 +4,8 @@ This repository contains MATLAB codes to invert shadowgraphy images (or proton r
 The description about this method and some assumptions can be found on ??? (TBC).
 It contains two main files:
 * main_forward
-* main_inverse_extended (coming soon)
-* invert_shadowgraphy (coming soon)
+* main_inverse_extended
+* invert_shadowgraphy
 
 In this code, I am using a normalised unit, where every pixel has size of 1 x 1, the distance from the object to the screen is 1, and the magnification is 1.
 The normalised deflection potential (Phi) and the deflection potential in normal units (Phi_N) are related by
