@@ -1,7 +1,7 @@
 Invert shadowgraphy by Muhammad Firmansyah Kasim (University of Oxford, 2016)
 
 This repository contains MATLAB codes to invert shadowgraphy images (or proton radiography images) to get its deflection potential of a diagnosed object.
-The description about this method and some assumptions can be found on ??? (TBC).
+The description about this method and some assumptions can be found on http://arxiv.org/abs/1607.04179.
 It contains 3 main files:
 * main_forward
 * main_inverse_extended
@@ -20,11 +20,12 @@ The codes contain other codes from:
 * https://uk.mathworks.com/matlabcentral/fileexchange/44385-power-diagrams
 * https://www.cs.ubc.ca/~schmidtm/Software/minFunc.html
 
-For non-commercial and non-military uses only.
-
 To get started:
 * download all the codes and put them in a folder
 * add the codes' main directory to MATLAB's path by running command 'addpath'
 * run 'add_libs' to add the other libs' paths
 * (optional) run demo.m
 * now you can use the main files
+
+If you are using all or part of this code in your work, please cite "M. F. Kasim, et al., Quantitative shadowgraphy and proton radiography for large intensity modulations, arXiv:1607.04179 (2016)."
+For non-commercial and non-military uses only.
