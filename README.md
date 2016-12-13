@@ -48,7 +48,7 @@ invert_shadowgraphy('directory/to/your/proton/radiogram/image');
 
 ###Submitting to clusters
 ######Requirements
-* MCR 8.3 (download [here](https://uk.mathworks.com/products/compiler/mcr.html) for free)
+* [MCR 8.3](https://uk.mathworks.com/products/compiler/mcr.html)
 
 ######Steps
 * Copy the executable in the /bin folder to your cluster
