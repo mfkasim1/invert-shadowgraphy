@@ -2,7 +2,7 @@
 % Input:
 %   * filename: string to a filename
 % Options:
-%   * 'num_sites': number of sites (default: number of pixels of the image)
+%   * 'num_sites': number of sites (default: min(100000, number of pixels of the image))
 %   * 'source_map': 0 - uniform with the same size as the file (default)
 %                   >0 - using tvdenoise with lambda = source_map argument
 %                   string - filename of the source
@@ -132,7 +132,7 @@ function invert_shadowgraphy(filename, varargin)
     % assign the variables according to the option values
     % num_sites
     if (options.num_sites < 0)
-        options.num_sites = Npix;
+        options.num_sites = min(Npix, 100000);
     end
     % source_map
     if (ischar(options.source_map)) % read the file

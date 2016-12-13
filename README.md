@@ -8,11 +8,14 @@ It contains 3 main files:
 * invert_shadowgraphy
 
 In this code, I am using a normalised unit, where every pixel has size of 1 x 1, the distance from the object to the screen is 1, and the magnification is 1.
-The normalised deflection potential (Phi) and the deflection potential in normal units (Phi_N) are related by
+The normalised deflection potential ([Phi](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phi.png)) and the deflection potential in normal units 
+([Phi_N](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phiN.png)) are related by
 
-![(Phi_N = Phi * 1/L * lpix^2 * M)](http://www.sciweavers.org/tex2img.php?eq=%5CPhi_N%20%3D%20%5CPhi%20%2A%201%2FL%20%2A%20l_%7Bpix%7D%5E2%20%2A%20M%2C&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+![(Phi_N = Phi * 1/L * l_pix^2 * M)](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/main-equation.png)
 
-where L is the distance between the object and the screen, lpix is the pixel size on the object plane, and M is the magnification.
+where [L](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/L.png) is the distance between the object and the screen,
+[l_pix](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/lpix.png) is the pixel size on the object plane, and 
+[M](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/M.png) is the magnification.
 
 The codes contain other codes from:
 * https://uk.mathworks.com/matlabcentral/fileexchange/56633-bounded-power-diagram
@@ -20,12 +23,48 @@ The codes contain other codes from:
 * https://uk.mathworks.com/matlabcentral/fileexchange/44385-power-diagrams
 * https://www.cs.ubc.ca/~schmidtm/Software/minFunc.html
 
-To get started:
-* download all the codes and put them in a folder
-* add the codes' main directory to MATLAB's path by running command 'addpath'
-* run 'add_libs' to add the other libs' paths
-* (optional) run demo.m
-* now you can use the main files
+###Getting started
+######Requirements
+* MATLAB R2013b or later
+* [Git](https://desktop.github.com/)
 
-If you are using all or part of this code in your work, please cite "M. F. Kasim, et al., Quantitative shadowgraphy and proton radiography for large intensity modulations, arXiv:1607.04179 (2016)."
-For non-commercial and non-military uses only.
+######Steps
+* Open cmd / bash / terminal and type the codes below
+
+```
+cd [the-directory-you-want-to-put-the-codes]
+git clone https://github.com/mfkasim91/invert-shadowgraphy
+cd invert-shadowgraphy
+matlab
+```
+
+* Add the libraries by typing `add_libs` in MATLAB command window
+* (Optional) To run the demo, type `demo` in MATLAB
+* To run the inversion in your computer, you can type:
+
+```matlab
+invert_shadowgraphy('directory/to/your/proton/radiogram/image');
+```
+
+#####Submitting to clusters
+######Requirements
+* MCR 8.3 (download [here](https://uk.mathworks.com/products/compiler/mcr.html) for free)
+
+######Steps
+* Copy the executable in the /bin folder to your cluster
+* In the script to submit the job, include this lines:
+
+```
+module load matlab/mcr/8.3
+./invert_shadowgraphy /complete/path/to/your/image <options>
+```
+
+###Options
+* `fdir_out`: the directory to put the results (default: pwd)
+* `num_sites`: number of sites (default: min(100000, number of pixels))
+* `source_map`:
+..* 0 - uniform with the same size as the file (default: 0)
+..* positive number - using tvdenoise of the input image with lambda = source_map argument
+..* string - filename of the source
+* `algorithm`: optimization algorithm, 'quasi-newton' or 'lbfgs' (default: 'lbfgs')
+* `num_workers`: number of workers in the distributed computing (default: 12)
