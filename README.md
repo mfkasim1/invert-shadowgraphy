@@ -1,4 +1,5 @@
-Invert shadowgraphy by Muhammad Firmansyah Kasim (University of Oxford, 2016)
+#Invert shadowgraphy and proton radiography
+by Muhammad Firmansyah Kasim (University of Oxford, 2016)
 
 This repository contains MATLAB codes to invert shadowgraphy images (or proton radiography images) to get its deflection potential of a diagnosed object.
 The description about this method and some assumptions can be found on http://arxiv.org/abs/1607.04179.
