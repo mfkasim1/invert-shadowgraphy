@@ -46,7 +46,7 @@ matlab
 invert_shadowgraphy('directory/to/your/proton/radiogram/image');
 ```
 
-#####Submitting to clusters
+###Submitting to clusters
 ######Requirements
 * MCR 8.3 (download [here](https://uk.mathworks.com/products/compiler/mcr.html) for free)
 
@@ -63,8 +63,8 @@ module load matlab/mcr/8.3
 * `fdir_out`: the directory to put the results (default: pwd)
 * `num_sites`: number of sites (default: min(100000, number of pixels))
 * `source_map`:
-..* 0 - uniform with the same size as the file (default: 0)
-..* positive number - using tvdenoise of the input image with lambda = source_map argument
-..* string - filename of the source
+  * 0 - uniform with the same size as the file (default: 0)
+  * positive number - using tvdenoise of the input image with lambda = source_map argument
+  * string - filename of the source
 * `algorithm`: optimization algorithm, 'quasi-newton' or 'lbfgs' (default: 'lbfgs')
 * `num_workers`: number of workers in the distributed computing (default: 12)
