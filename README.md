@@ -11,7 +11,7 @@ In this code, I am using a normalised unit, where every pixel has size of 1 x 1,
 The normalised deflection potential ([Phi](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phi.png)) and the deflection potential in normal units 
 ([Phi_N](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phiN.png)) are related by
 
-![(Phi_N = Phi * 1/L * l_pix^2 * M)](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/main-equation.png)
+<img src="http://sp.mfkasim.com/assets/other/invert-shadowgraphy/main-equation.png" title="Phi_N = Phi * 1/L * l_pix^2 * M"/>
 
 where [L](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/L.png) is the distance between the object and the screen,
 [l_pix](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/lpix.png) is the pixel size on the object plane, and 
