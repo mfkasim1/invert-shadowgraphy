@@ -1,4 +1,4 @@
-#Invert shadowgraphy and proton radiography
+# Invert shadowgraphy and proton radiography
 
 This repository contains MATLAB codes to invert shadowgraphy images (or proton radiography images) to get its deflection potential of a diagnosed object.
 The description about this method and some assumptions can be found on http://arxiv.org/abs/1607.04179.
@@ -23,12 +23,12 @@ The codes contain other codes from:
 * https://uk.mathworks.com/matlabcentral/fileexchange/44385-power-diagrams
 * https://www.cs.ubc.ca/~schmidtm/Software/minFunc.html
 
-###Getting started
-######Requirements
+### Getting started
+###### Requirements
 * MATLAB R2013b or later
 * [Git](https://desktop.github.com/)
 
-######Steps
+###### Steps
 * Open cmd / bash / terminal and type the codes below
 
 ```
@@ -46,11 +46,11 @@ matlab
 invert_shadowgraphy('directory/to/your/proton/radiogram/image');
 ```
 
-###Submitting to clusters
-######Requirements
+### Submitting to clusters
+###### Requirements
 * [MCR 8.3](https://uk.mathworks.com/products/compiler/mcr.html)
 
-######Steps
+###### Steps
 * Copy the executable in the /bin folder to your cluster
 * In the script to submit the job, include this lines:
 
@@ -59,7 +59,7 @@ module load matlab/mcr/8.3
 ./invert_shadowgraphy /complete/path/to/your/image <options>
 ```
 
-###Options
+### Options
 * `fdir_out`: the directory to put the results (default: pwd)
 * `num_sites`: number of sites (default: min(100000, number of pixels))
 * `source_map`:
