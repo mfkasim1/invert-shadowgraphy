@@ -13,6 +13,7 @@
 %              0 - no message and no processing images shown
 %              1 - shows messages, without images
 %              2 - shows messages and images
+%   * record_to: record the progress to the specified .mat file, leave '' if not recording (default: '')
 % Output:
 %   * Phi: deflection potential according to the equation above (Ny x Nx)
 %   * sites: sampling sites from the sourceMap using Lloyd's algorithm (numPoints x 3)
@@ -23,23 +24,33 @@
 %   * total intensity on the sourceMap and targetMap must equal to 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites, algorithm, verbose)
+function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites, algorithm, verbose, record_to)
+    addpath(genpath(pwd));
+
     % default parameters
     if nargin < 3
         num_sites = floor(0.8 * numel(targetMap));
-    elseif nargin < 4
-        if (numel(targetMap) <= 40000) algorithm = 'quasi-newton';
-        else algorithm = 'lbfgs'; end;
-    elseif nargin < 5
+    end
+    if nargin < 4
+        if (numel(targetMap) <= 40000)
+            algorithm = 'quasi-newton';
+        else
+            algorithm = 'lbfgs';
+        end;
+    end
+    if nargin < 5
         verbose = 0;
     end
-    
+    if nargin < 6
+        record_to = '';
+    end
+
     % getting the basic parameters for this algorithm
     [Ny, Nx] = size(targetMap);
     [X,Y] = meshgrid([1:Nx], [1:Ny]);
     N = num_sites;
     pRect = [0 0; 0 Ny; Nx Ny; Nx 0] + 1;
-    
+
     % get the sites on the sourceMap
     % sample the source map using rejection algorithm and Lloyd's algorithm
     if (verbose) disp('Sampling the source map'); end
@@ -48,18 +59,24 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
     [Px , Py , Ap] = weighted_lloyds_algorithm(Px0, Py0, sourceMap, lloydsOptions);
     p = [Px, Py];
     lambdap = Ap;
-    
+
     % save it to sites so people can reuse it for other targetMap (with the same sourceMap)
     sites = zeros([size(p,1),3]);
     sites(:,1:2) = p;
     sites(:,3) = lambdap;
-    
+
+    if (~strcmp(record_to, ''))
+        all_weights = [];
+        all_penalties = [];
+        save(record_to, 'sites', 'sourceMap', 'targetMap', 'all_weights', 'all_penalties');
+    end
+
     % use gradient descent to determine the optimal weight for optimal transport map
     if (verbose) disp('Getting the optimal transport map'); end;
-    fun = @(w) penalty_function(p, lambdap, targetMap, w, verbose);
+    fun = @(w) penalty_function(p, lambdap, targetMap, w, verbose, record_to);
     w0 = zeros([N,1]);
     if (strcmp(algorithm, 'quasi-newton'))
-        if (verbose) displayOpt = 'iter'; 
+        if (verbose) displayOpt = 'iter';
         else displayOpt = 'none'; end
         options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'GradObj', 'on', 'Display', displayOpt, 'MaxIter', 200); % quasi-newton
         w = fminunc(fun, w0, options);
@@ -69,7 +86,7 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
         options.MaxIter = 200;
         w = minFunc(fun, w0, options); % l-bfgs
     end
-    
+
     % determine the weighted centroid of each power cell
     [V,C] = power_bounded(p(:,1), p(:,2), w, pRect);
     % PD = powerDiagramRectBounded(p, w, pRect);
@@ -89,14 +106,14 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
         [xPoly, yPoly] = poly2cw(xPoly, yPoly);
         [~, pt(j,1), pt(j,2), ~] = poly_pixel_area_cm_inertia(xPoly, yPoly, targetMap);
     end
-    
+
     % debugging
     if (numEmpty > 0)
         disp(sprintf('Warning: there are %d sites without cells, and they are at:', numEmpty));
         disp(emptySites);
     end
-    
-    
+
+
     % move the points closest to the corners to the corner (to make the convex hull covers all the area)
     ps = p;
     for (j = [1:size(pRect,1)])
@@ -105,23 +122,23 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
         vec = bsxfun(@minus, p, corner);
         distance = sum(vec.^2, 2);
         minIdx = find(distance == min(distance), 1);
-        
+
         % move the point to the corner
         ps(minIdx,:) = corner;
     end
-    
+
     % interpolate and extrapolate for xMap and yMap
     if (verbose) disp('Interpolating the transportation map'); end
     Fx = scatteredInterpolant(ps(:,1), ps(:,2), pt(:,1), 'natural', 'linear');
     Fy = scatteredInterpolant(ps(:,1), ps(:,2), pt(:,2), 'natural', 'linear');
     xMap = Fx(X+0.5,Y+0.5);
     yMap = Fy(X+0.5,Y+0.5);
-    
+
     % get the deflection angle
     if (verbose) disp('Calculating the deflection potential'); end
     alphax = xMap - (X+0.5);
     alphay = yMap - (Y+0.5);
-    
+
     % invert the grad by choosing one point as zero (pZero)
     pZero = floor(size(targetMap)/2);
     cumsumX = cumsum(alphax, 2);
