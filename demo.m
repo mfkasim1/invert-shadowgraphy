@@ -6,7 +6,7 @@
 % test = 1 to take shadowgraph image of a Gaussian deflection potential and invert the image to retrieve the deflection potential (takes ~10 minutes in my computer)
 % test = 2 to demonstrate the use of invert_shadowgraphy function (takes ~10 minutes in my computer)
 test = 1;
-addpath(genpath(pwd));
+add_libs;
 
 if test <= 1
     verbose = 1;
