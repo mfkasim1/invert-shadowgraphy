@@ -40,7 +40,6 @@ cd invert-shadowgraphy
 matlab
 ```
 
-* Add the libraries by typing `add_libs` in MATLAB command window
 * (Optional) To run the demo, type `demo` in MATLAB
 * To run the inversion in your computer, you can type:
 
