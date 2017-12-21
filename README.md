@@ -8,13 +8,13 @@ It contains 3 main files:
 * invert_shadowgraphy
 
 In this code, I am using a normalised unit, where every pixel has size of 1 x 1, the distance from the object to the screen is 1, and the magnification is 1.
-The normalised deflection potential (![Phi](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phi.png)) and the deflection potential in normal units 
+The normalised deflection potential (![Phi](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phi.png)) and the deflection potential in normal units
 (![Phi_N](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/phiN.png)) are related by
 
 ![Phi_N = Phi * 1/L * l_pix^2 * M](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/main_equation.png)
 
 where ![L](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/L.png) is the distance between the object and the screen,
-![l_pix](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/lpix.png) is the pixel size on the object plane, and 
+![l_pix](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/lpix.png) is the pixel size on the object plane, and
 ![M](http://sp.mfkasim.com/assets/other/invert-shadowgraphy/M.png) is the magnification.
 
 The codes contain other codes from:
@@ -26,6 +26,8 @@ The codes contain other codes from:
 ### Getting started
 ###### Requirements
 * MATLAB R2013b or later
+* Parallel Computing toolbox (MATLAB)
+* Mapping toolbox (MATLAB)
 * [Git](https://desktop.github.com/)
 
 ###### Steps

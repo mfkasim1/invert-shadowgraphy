@@ -25,8 +25,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites, algorithm, verbose, record_to)
-    addpath(genpath(pwd));
-
+    add_libs;
+    
     % default parameters
     if nargin < 3
         num_sites = floor(0.8 * numel(targetMap));
@@ -75,15 +75,16 @@ function [Phi, sites, w] = main_inverse_extended(sourceMap, targetMap, num_sites
     if (verbose) disp('Getting the optimal transport map'); end;
     fun = @(w) penalty_function(p, lambdap, targetMap, w, verbose, record_to);
     w0 = zeros([N,1]);
+    max_iter = max(Nx, Ny) * 4;
     if (strcmp(algorithm, 'quasi-newton'))
         if (verbose) displayOpt = 'iter';
         else displayOpt = 'none'; end
-        options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'GradObj', 'on', 'Display', displayOpt, 'MaxIter', 200); % quasi-newton
+        options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'GradObj', 'on', 'Display', displayOpt, 'MaxIter', max_iter); % quasi-newton
         w = fminunc(fun, w0, options);
     elseif (strcmp(algorithm, 'lbfgs'))
         if (verbose) options.Display = 1;
         else options.Display = 0; end;
-        options.MaxIter = 200;
+        options.MaxIter = max_iter;
         w = minFunc(fun, w0, options); % l-bfgs
     end
 

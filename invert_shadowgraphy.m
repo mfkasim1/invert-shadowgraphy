@@ -2,7 +2,7 @@
 % Input:
 %   * filename: string to a filename
 % Options:
-%   * 'num_sites': number of sites (default: min(100000, number of pixels of the image))
+%   * 'num_sites': number of sites (default: min(100000, 0.8*number of pixels of the image))
 %   * 'source_map': 0 - uniform with the same size as the file (default)
 %                   >0 - using tvdenoise with lambda = source_map argument
 %                   string - filename of the source
@@ -15,7 +15,7 @@
 % invert_shadowgraphy('H:\Projects\scripts\proton_radiography\voronoi_method\standalone\test_pic\target_map_1.png', 'num_sites', '1000', 'fdir_out', 'H:\Projects\scripts\proton_radiography\voronoi_method\standalone\test_pic', 'num_workers', '4');
 
 function invert_shadowgraphy(filename, varargin)
-    addpath(genpath(pwd));
+    add_libs;
 
     totalTimeTic = tic;
     if (nargin == 0)
@@ -31,7 +31,7 @@ function invert_shadowgraphy(filename, varargin)
     options.fdir_out = pwd;
     options.algorithm = 'lbfgs';
     options.num_workers = 12;
-    option.record_to = '';
+    options.record_to = '';
 
     % read the options specified from the user
     for (i = [1:2:length(varargin)])
@@ -143,7 +143,7 @@ function invert_shadowgraphy(filename, varargin)
     % assign the variables according to the option values
     % num_sites
     if (options.num_sites < 0)
-        options.num_sites = min(Npix, 100000);
+        options.num_sites = min(floor(0.8*Npix), 100000);
     end
     % source_map
     if (ischar(options.source_map)) % read the file

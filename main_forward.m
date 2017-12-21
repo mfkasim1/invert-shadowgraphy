@@ -16,8 +16,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function targetMap = main_forward(sourceMap, Phi)
-    addpath(genpath(pwd));
-    
+    add_libs;
+
     % getting the basic parameters for this algorithm
     [Ny, Nx] = size(sourceMap);
     [x,y] = meshgrid([1:Nx], [1:Ny]);

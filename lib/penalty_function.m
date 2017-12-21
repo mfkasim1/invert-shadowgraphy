@@ -90,6 +90,6 @@ function [Phi, delPhi] = penalty_function(p, lambdap, targetDensity, weights, ve
         load(record_to, 'all_weights', 'all_penalties');
         all_weights(:,end+1) = weights;
         all_penalties(end+1) = Phi;
-        save(record_to, 'all_weights', 'all_penalties', '-amend');
+        save(record_to, 'all_weights', 'all_penalties', '-append');
     end
 end

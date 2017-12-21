@@ -5,18 +5,18 @@
 % test = 0 to take shadowgraph image of a Gaussian deflection potential (takes < 1 minute in my computer)
 % test = 1 to take shadowgraph image of a Gaussian deflection potential and invert the image to retrieve the deflection potential (takes ~10 minutes in my computer)
 % test = 2 to demonstrate the use of invert_shadowgraphy function (takes ~10 minutes in my computer)
-test = 0;
+test = 1;
 addpath(genpath(pwd));
 
 if test <= 1
-    verbose = 0;
-    N = 100; % image size: N x N pixels (default: 50)
+    verbose = 1;
+    N = 50; % image size: N x N pixels (default: 50)
     sourceMap = ones(N); % uniform source distribution profile
 
     % construct the deflection potential
     [X,Y] = meshgrid(linspace(-1, 1, N)); % create a coordinate with N points going from -1 to 1
     sigma = 0.25; % sigma of the gaussian profile
-    Phi0 = 160; % peak value of the deflection potential (default: 80)
+    Phi0 = 80; % peak value of the deflection potential (default: 80)
     Phi = Phi0 * exp(-(X.^2 + Y.^2)/2/sigma^2);
 
     % get the shadowgraph image with the corresponding deflection potential
@@ -35,7 +35,7 @@ if test <= 1
     imagesc(targetMap); colormap gray;
     title('Shadowgram image');
     subplot(2,2,4);
-    plot(targetMap(ceil(N/2),:));
+    plot(targetMap(ceil(end/2),:));
     title('Central horizontal slice');
 end
 if test == 1
@@ -58,14 +58,14 @@ if test == 1
     imagesc(PhiI); colormap default; colorbar;
     title('Retrieved deflection potential');
     subplot(2,2,3);
-    plot(Phi(ceil(N/2),:), 'b-'); hold on;
-    plot(PhiI(ceil(N/2),:), 'g--'); hold off;
+    plot(Phi(ceil(end/2),:), 'b-'); hold on;
+    plot(PhiI(ceil(end/2),:), 'g--'); hold off;
     title('Horizontal slice of the deflection potentials');
     subplot(2,2,2);
     imagesc(targetMap); colormap gray;
     title('Shadowgram image');
     subplot(2,2,4);
-    plot(targetMap(ceil(N/2),:));
+    plot(targetMap(ceil(end/2),:));
     title('Central horizontal slice');
 
 elseif test == 2
@@ -99,7 +99,7 @@ elseif test == 2
     imagesc(targetMap); colormap gray;
     title('Shadowgram image');
     subplot(2,2,3);
-    plot(PhiI(ceil(N/2),:));
+    plot(PhiI(ceil(end/2),:));
     title('Horizontal slice of the potential');
     subplot(2,2,4);
     imagesc(targetMapI); colormap gray;
