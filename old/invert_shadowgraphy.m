@@ -7,14 +7,14 @@
 %                   >0 - using tvdenoise with lambda = source_map argument
 %                   string - filename of the source
 %   * 'fdir_out': directory to write the output (default: pwd)
+%   * 'algorithm': optimization algorithm, 'quasi-newton', 'lbfgs' (default)
+%   * 'num_workers': number of workers (default: 12)
 %   * 'record_to': record the progress to the specified .mat file, leave '' if not recording (default: '')
 % This function assumes that there is no beam loss / gain during the interaction
 % Test:
-% fast_invert_shadowgraphy('test-figures/test-100pix.png', ...
-%                          'fdir_out', '/your/intended/directory');
-%
+% invert_shadowgraphy('H:\Projects\scripts\proton_radiography\voronoi_method\standalone\test_pic\target_map_1.png', 'num_sites', '1000', 'fdir_out', 'H:\Projects\scripts\proton_radiography\voronoi_method\standalone\test_pic', 'num_workers', '4');
 
-function fast_invert_shadowgraphy(filename, varargin)
+function invert_shadowgraphy(filename, varargin)
     add_libs;
 
     totalTimeTic = tic;
@@ -26,8 +26,11 @@ function fast_invert_shadowgraphy(filename, varargin)
 
     % set the default options
     options = {};
+    options.num_sites = -1;
     options.source_map = 0;
     options.fdir_out = pwd;
+    options.algorithm = 'lbfgs';
+    options.num_workers = 12;
     options.record_to = '';
 
     % read the options specified from the user
@@ -35,7 +38,19 @@ function fast_invert_shadowgraphy(filename, varargin)
         s = varargin{i}; % check the option name
         c = varargin{i+1}; % check the option value
 
-        if (strcmp(s, 'source_map'))
+        if (strcmp(s, 'num_sites'))
+            if (ischar(c)) c = str2num(c); end;
+            if (isnumeric(c))
+                if (length(c) == 1)
+                    options.num_sites = c;
+                else
+                    error('The num_sites options must be a single number');
+                end
+            else
+                error('The num_sites options must be a single number');
+            end
+
+        elseif (strcmp(s, 'source_map'))
             if ((c == 0) | (c == '0'))
                 options.source_map = 0;
             elseif (ischar(c))
@@ -65,6 +80,30 @@ function fast_invert_shadowgraphy(filename, varargin)
                 error('The option record_to must be a string and end in .mat');
             end
 
+        elseif (strcmp(s, 'algorithm'))
+            availAlgorithms = {'quasi-newton', 'lbfgs'};
+            if (ischar(c))
+                if (~string_in(c, availAlgorithms))
+                    error(sprintf('The algorithm %s is not available', c));
+                else
+                    options.algorithm = c;
+                end
+            else
+                error('The option algorithm must be a string');
+            end
+
+        elseif (strcmp(s, 'num_workers'))
+            if (ischar(c)) c = str2num(c); end;
+            if (isnumeric(c))
+                if (length(c) == 1)
+                    options.num_workers = c;
+                else
+                    error('The num_workers options must be a single number');
+                end
+            else
+                error('The num_workers options must be a single number');
+            end
+
         else
             error(sprintf('The options %s is not available. They are case-sensitive.', s));
         end
@@ -87,23 +126,35 @@ function fast_invert_shadowgraphy(filename, varargin)
         fname = filename(slashIdx+1:dotIdx-1);
     end
 
+    % start the parallel pool
+    disp('Creating the parallel pool workers');
+    pp = gcp('nocreate'); % If no pool, do not create new one.
+    if (~isempty(pp)) delete(pp); end; % if there is a pool, delete it
+    cluster = parcluster('local');
+    cluster.NumWorkers = options.num_workers;
+    pp = parpool(cluster, options.num_workers);
+
     % read the file
-    fprintf('Reading the target map file\n');
+    disp('Reading the target map file');
     img = double(imread(filename));
     img = check_image_and_convert(img);
     Npix = size(img,1) * size(img,2);
 
     % assign the variables according to the option values
+    % num_sites
+    if (options.num_sites < 0)
+        options.num_sites = min(floor(0.8*Npix), 100000);
+    end
     % source_map
     if (ischar(options.source_map)) % read the file
-        fprintf('Reading the source map file\n');
+        disp('Reading the source map file');
         options.source_map = double(imread(options.source_map));
         options.source_map = check_image_and_convert(options.source_map);
     elseif (options.source_map == 0) % uniform
-        fprintf('Assuming a uniform source map\n');
+        disp('Assuming a uniform source map');
         options.source_map = ones(size(img));
     elseif (options.source_map > 0) % denoise from the target image
-        fprintf('Applying TV denoise algorithm with lambda parameter %f\n', options.source_map);
+        disp(sprintf('Applying TV denoise algorithm with lambda parameter %f', options.source_map));
         options.source_map = tvdenoise(img, options.source_map, 1000);
     end
     % fdir_out
@@ -114,32 +165,29 @@ function fast_invert_shadowgraphy(filename, varargin)
     end
 
     % now let's the fun begin
-    fprintf('Normalising the source and target maps\n');
+    disp('Normalising the source and target maps');
     sourceMap = options.source_map / sum(options.source_map(:)) * Npix;
     targetMap = img / sum(img(:)) * Npix;
 
-    fprintf('Retrieving the deflection potential from the source and target maps\n');
+    disp('Retrieving the deflection potential from the source and target maps');
     bbbb = tic;
-    PhiI = main_inverse(sourceMap, targetMap);
-    subplot(1,2,1);
-    imagesc(sourceMap);
-    colorbar;
-    subplot(1,2,2);
-    imagesc(targetMap);
-    colorbar;
+    [PhiI, sitesI, w] = main_inverse_extended(sourceMap, targetMap, options.num_sites, options.algorithm, 1, options.record_to);
     main_inverse_time = toc(bbbb);
 
-    fprintf('Getting the reconstructed image from the retrieved potential\n');
+    disp('Getting the reconstructed image from the retrieved potential');
     targetMapI = main_forward(sourceMap, PhiI);
     targetMapI = targetMapI/sum(targetMap(:)) * Npix;
 
     % save variables into a file
-    fprintf('Saving the results into a file\n');
+    disp('Saving the results into a file');
     fnameOut = strcat(options.fdir_out, fname, '-data.mat');
-    save(fnameOut, 'sourceMap', 'targetMap', 'PhiI', 'targetMapI', 'main_inverse_time');
+    save(fnameOut, 'sourceMap', 'targetMap', 'PhiI', 'targetMapI', 'main_inverse_time', 'sitesI', 'w');
 
     totalTime = toc(totalTimeTic);
-    fprintf('Finish in %ds\n', totalTime);
+    disp(sprintf('Finish in %d s with %d workers', totalTime, pp.NumWorkers));
+
+    % remove the parallel pool
+    delete(pp);
 end
 
 function r = string_in(s, strCells)
@@ -150,7 +198,7 @@ function r = string_in(s, strCells)
 end
 
 function img = check_image_and_convert(img)
-    if (length(size(img)) == 3) % if not grayscale, then fprintflay warning and convert it
+    if (length(size(img)) == 3) % if not grayscale, then display warning and convert it
         warning('The image is not in grayscale (1 channel). We will convert it to grayscale.');
         img = mean(img, 3);
     elseif (length(size(img)) == 4)

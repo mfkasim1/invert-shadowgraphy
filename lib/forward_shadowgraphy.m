@@ -1,4 +1,4 @@
-function [imtarget] = main_forward(imsource, phi)
+function [imtarget] = forward_shadowgraphy(imsource, phi)
   % calculate the total deflection, so that y = del(u)
   [Nx1, Nx2] = size(imsource);
   [x2, x1] = meshgrid([0:Nx2+1], [0:Nx1+1]); % pad by 1 pixel on each end

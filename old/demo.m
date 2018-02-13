@@ -3,30 +3,28 @@
 
 
 % test = 0 to take shadowgraph image of a Gaussian deflection potential (takes < 1s in my computer)
-% test = 1 to take shadowgraph image of a Gaussian deflection potential and invert the image to retrieve the deflection potential (takes ~10s in my computer)
-% test = 2 to demonstrate the use of invert_shadowgraphy function (takes ~10s in my computer)
-test = 1;
+% test = 1 to take shadowgraph image of a Gaussian deflection potential and invert the image to retrieve the deflection potential (takes < 1s in my computer)
+% test = 2 to demonstrate the use of invert_shadowgraphy function (takes ~10 minutes in my computer)
+test = 2;
 add_libs;
 
 if test <= 1
     verbose = 1;
-    scale = 4;
-    N = 50 * scale; % image size: N x N pixels (default: 50)
+    N = 50; % image size: N x N pixels (default: 50)
     sourceMap = ones(N); % uniform source distribution profile
 
     % construct the deflection potential
     [X,Y] = meshgrid(linspace(-1, 1, N)); % create a coordinate with N points going from -1 to 1
     sigma = 0.25; % sigma of the gaussian profile
-    Phi0 = 70 * scale * scale; % peak value of the deflection potential (default: 80)
+    Phi0 = 80; % peak value of the deflection potential (default: 80)
     Phi = Phi0 * exp(-(X.^2 + Y.^2)/2/sigma^2);
 
     % get the shadowgraph image with the corresponding deflection potential
     if (verbose) disp('Obtaining the shadowgram ...'); end;
     forwardTic = tic;
     targetMap = main_forward(sourceMap, Phi); % usually it takes ~2s in my computer
-    targetMap = targetMap + randn(size(targetMap)) * 0.0;
     forwardTime = toc(forwardTic);
-    if (verbose) fprintf('Finish in %fs\n', forwardTime); end
+    if (verbose) disp(sprintf('Finish in %fs', forwardTime)); end
 
     % displaying the source map, deflection potential, and the shadowgraphy image
     close all;
@@ -50,7 +48,7 @@ if test == 1
     inverseTic = tic;
     PhiI = main_inverse(sourceMap, targetMap); % it takes ~10s in my computer
     inverseTime = toc(inverseTic);
-    if (verbose) fprintf('Finish in %fs\n', inverseTime); end
+    if (verbose) disp(sprintf('Finish in %fs', inverseTime)); end
 
     % normalise the retrieved potential
     PhiI = PhiI - min(PhiI(:));
@@ -84,14 +82,13 @@ elseif test == 2
 
     % get the file directory
     fdir = strcat(currentDir, 'test-figures/');
-    fname = 'test';
-    filename = strcat(fdir, fname, '.png');
+    filename = strcat(fdir, 'test-100pix.png');
 
     % invert it using invert_shadowgraphy
     invert_shadowgraphy(filename, 'fdir_out', fdir);
 
     % load the result file
-    load(strcat(fdir, fname, '-data.mat'));
+    load(strcat(fdir, 'test-data.mat'));
 
     % display the results
     PhiI = PhiI - min(PhiI(:));
