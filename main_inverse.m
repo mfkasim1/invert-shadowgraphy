@@ -1,6 +1,8 @@
 function phi = main_inverse(imsource, imtarget)
   refresh_interval = 100;
-  tol = 1.2e-2;
+  rel_tol = 1e-3;
+  max_niter = 8000;
+  minstep = 1e-3;
 
   % normalisation
   imsource = imsource / sum(imsource(:)) * prod(size(imsource));
@@ -22,23 +24,31 @@ function phi = main_inverse(imsource, imtarget)
   xx2 = x2(2:end-1,2:end-1);
 
   % define the objective function and do L-BFGS optimization
+  stime = tic;
   func_obj = @(u) func_grad(F, imsource, u);
 
   % search the step size
   [f0, du0] = func_obj(u0);
+  finit = f0;
   % imagesc(reshape(du0, size(u_init)));
   % colorbar;
   % pause;
-  step0 = 1e0;
+  step0 = 1e-3;
   step = step_search(func_obj, u0, f0, du0, step0);
   u = u0 - step * du0;
 
   % iteration
   niter = 0;
   f = inf;
-  while (f > tol*tol)
+  fmin = inf;
+  umin = 0;
+  while 1
     [f, du] = func_obj(u);
-    if (f > f0)
+    if f < fmin
+      fmin = f;
+      umin = u;
+    end
+    if f > f0 && step > minstep
       step = step / 2;
       u = u0 - step * du0;
     else
@@ -48,13 +58,27 @@ function phi = main_inverse(imsource, imtarget)
       u = u0 - step * du0;
     end
     niter = niter + 1;
+    if step < minstep
+      step = minstep;
+    end
     if mod(niter, refresh_interval) == 0
       step = step_search(func_obj, u0, f0, du0, step);
-      fprintf('%6d    %.6e     %.3e\n', niter, f, step);
+      if step < minstep
+        step = minstep;
+      end
+      fprintf('%6d    %.6e     %.3e    %.3es\n', niter, f, step, toc(stime));
+    end
+
+    % stopping conditions
+    if niter > max_niter
+      break;
+    end
+    if fmin / finit < rel_tol
+      break;
     end
   end
 
-  phi = u_init - reshape(u, size(u_init));
+  phi = u_init - reshape(umin, size(u_init));
   phi = phi(2:end-1, 2:end-1);
 end
 
@@ -89,6 +113,11 @@ function [f,df] = func_grad(F, imsource, u)
   imratio = imsource ./ imtarget_s;
   dudt = zeros(size(imsource)+2);
   dudt(2:end-1,2:end-1) = -log(abs(imsource ./ (imtarget_s .* det_jac)));
+
+  % normalise the not-normal values
+  dudt(isnan(dudt)) = 0;
+  dudt(isinf(dudt)) = 0; %max(dudt(~isinf(dudt)));
+  dudt(isinf(dudt)) = max(dudt(~isinf(dudt)));
 
   % error and the gradient
   f = mean((dudt(:)).^2);
@@ -129,7 +158,7 @@ function step = step_search(func_obj, u0, f0, du0, step)
     d = a + (b - a) * golden_inv;
     if fc < fd
       fd = fc;
-      fc = func_obj(u0 - c * du0); 
+      fc = func_obj(u0 - c * du0);
     else
       fc = fd;
       fd = func_obj(u0 - d * du0);

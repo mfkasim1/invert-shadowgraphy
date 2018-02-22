@@ -121,12 +121,6 @@ function fast_invert_shadowgraphy(filename, varargin)
     fprintf('Retrieving the deflection potential from the source and target maps\n');
     bbbb = tic;
     PhiI = main_inverse(sourceMap, targetMap);
-    subplot(1,2,1);
-    imagesc(sourceMap);
-    colorbar;
-    subplot(1,2,2);
-    imagesc(targetMap);
-    colorbar;
     main_inverse_time = toc(bbbb);
 
     fprintf('Getting the reconstructed image from the retrieved potential\n');
@@ -137,6 +131,23 @@ function fast_invert_shadowgraphy(filename, varargin)
     fprintf('Saving the results into a file\n');
     fnameOut = strcat(options.fdir_out, fname, '-data.mat');
     save(fnameOut, 'sourceMap', 'targetMap', 'PhiI', 'targetMapI', 'main_inverse_time');
+
+    subplot(2,2,1);
+    imagesc(sourceMap);
+    title('Source');
+    colorbar;
+    subplot(2,2,2);
+    imagesc(targetMap);
+    title('Original target');
+    colorbar;
+    subplot(2,2,3);
+    imagesc(PhiI);
+    title('Deflection potential');
+    colorbar;
+    subplot(2,2,4);
+    imagesc(targetMapI);
+    title('Reconstructed target');
+    colorbar;
 
     totalTime = toc(totalTimeTic);
     fprintf('Finish in %ds\n', totalTime);
