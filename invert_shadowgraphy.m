@@ -1,18 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Invert the grayscale shadowgraphy image
 % Input:
 %   * filename: string to a filename
 % Options:
-%   * 'num_sites': number of sites (default: min(100000, 0.8*number of pixels of the image))
 %   * 'source_map': 0 - uniform with the same size as the file (default)
 %                   >0 - using tvdenoise with lambda = source_map argument
 %                   string - filename of the source
 %   * 'fdir_out': directory to write the output (default: pwd)
-%   * 'record_to': record the progress to the specified .mat file, leave '' if not recording (default: '')
+%   * 'record_to': record the progress to the specified .mat file, leave '' if
+%                  not recording (default: '')
 % This function assumes that there is no beam loss / gain during the interaction
 % Test:
 % fast_invert_shadowgraphy('test-figures/test-100pix.png', ...
 %                          'fdir_out', '/your/intended/directory');
 %
+% Author: Muhammad F. Kasim (University of Oxford, 2018)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function fast_invert_shadowgraphy(filename, varargin)
     add_libs;

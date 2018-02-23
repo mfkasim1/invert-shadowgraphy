@@ -1,12 +1,44 @@
 function phi = main_inverse(imsource, imtarget)
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Retrieving the deflection potential given the source image (i.e. the image
+  % without the deflection) and the target image (i.e. the image with the
+  % deflection) using the algorithm suggested in Sulman, et al. (2011), "An
+  % efficient approach for the numerical solution of the Monge–Ampère equation"
+  % combined with adaptive step search.
+  %
+  % Input:
+  % * imsource: the source image, for undefined region, can be set to nan
+  % * imtarget: the target image, for undefined region, can be set to nan
+  %
+  % Output:
+  % * phi: the deflection potential
+  %
+  % Constraints:
+  % * imsource and imtarget need no normalization, it normalizes inside the
+  %     function to have mean = 1
+  % * the defined region must have the same shape and position
+  % * the values uses the normalization values where each pixel has size of 1
+  % * the defined region should be convex
+  %
+  % Author: Muhammad F. Kasim (University of Oxford, 2018)
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  % options
   refresh_interval = 100;
   rel_tol = 1e-3;
-  max_niter = 8000;
+  max_niter = 50000;
   minstep = 1e-3;
+  max_time = 60*5;
+
+  % get the mask
+  mask = ~isnan(imtarget);
 
   % normalisation
-  imsource = imsource / sum(imsource(:)) * prod(size(imsource));
-  imtarget = imtarget / sum(imtarget(:)) * prod(size(imsource));
+  imsource = imsource / mean(imsource(mask));
+  imtarget = imtarget / mean(imtarget(mask));
+
+  % extrapolate outside the mask
+  imtarget_fill = fillmissing(imtarget, 'constant', nan);
 
   % initialise u to be no deflection
   [Nx1, Nx2] = size(imsource);
@@ -17,7 +49,7 @@ function phi = main_inverse(imsource, imtarget)
   % get the interpolant
   xx1 = x1(2:end-1,2:end-1);
   xx2 = x2(2:end-1,2:end-1);
-  F = griddedInterpolant(xx1, xx2, imtarget, 'linear', 'nearest'); % mean(imsource(:)));
+  F = griddedInterpolant(xx1, xx2, imtarget_fill, 'linear', 'nearest');
 
   % get the grid data point on the source plane
   xx1 = x1(2:end-1,2:end-1);
@@ -30,10 +62,7 @@ function phi = main_inverse(imsource, imtarget)
   % search the step size
   [f0, du0] = func_obj(u0);
   finit = f0;
-  % imagesc(reshape(du0, size(u_init)));
-  % colorbar;
-  % pause;
-  step0 = 1e-3;
+  step0 = minstep;
   step = step_search(func_obj, u0, f0, du0, step0);
   u = u0 - step * du0;
 
@@ -61,7 +90,7 @@ function phi = main_inverse(imsource, imtarget)
     if step < minstep
       step = minstep;
     end
-    if mod(niter, refresh_interval) == 0
+    if mod(niter, refresh_interval) == 0 || niter == 1
       step = step_search(func_obj, u0, f0, du0, step);
       if step < minstep
         step = minstep;
@@ -76,7 +105,11 @@ function phi = main_inverse(imsource, imtarget)
     if fmin / finit < rel_tol
       break;
     end
+    if toc(stime) > max_time
+      break;
+    end
   end
+  fprintf('%6d    %.6e     %.3e    %.3es\n', niter, f, step, toc(stime));
 
   phi = u_init - reshape(umin, size(u_init));
   phi = phi(2:end-1, 2:end-1);
@@ -110,14 +143,12 @@ function [f,df] = func_grad(F, imsource, u)
 
   % get the target plane intensity if brought to the source plane
   imtarget_s = F(ux1, ux2);
-  imratio = imsource ./ imtarget_s;
   dudt = zeros(size(imsource)+2);
   dudt(2:end-1,2:end-1) = -log(abs(imsource ./ (imtarget_s .* det_jac)));
 
   % normalise the not-normal values
   dudt(isnan(dudt)) = 0;
   dudt(isinf(dudt)) = 0; %max(dudt(~isinf(dudt)));
-  dudt(isinf(dudt)) = max(dudt(~isinf(dudt)));
 
   % error and the gradient
   f = mean((dudt(:)).^2);
