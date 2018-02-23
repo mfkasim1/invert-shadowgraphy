@@ -62,10 +62,8 @@ module load matlab/mcr/8.3
 
 ### Options
 * `fdir_out`: the directory to put the results (default: pwd)
-* `num_sites`: number of sites (default: min(100000, number of pixels))
+* `record_to`: record the progress to the specified .mat file, leave '' if not recording (default: '')
 * `source_map`:
   * 0 - uniform with the same size as the file (default: 0)
   * positive number - using tvdenoise of the input image with lambda = source_map argument
   * string - filename of the source
-* `algorithm`: optimization algorithm, 'quasi-newton' or 'lbfgs' (default: 'lbfgs')
-* `num_workers`: number of workers in the distributed computing (default: 12)
