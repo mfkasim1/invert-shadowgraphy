@@ -29,6 +29,10 @@ function phi = main_inverse(imsource, imtarget)
   max_niter = 50000;
   minstep = 1e-3;
   max_time = 60*5;
+  max_niter_no_update = 5000;
+  % it seems that nearest neighbor interpolation is more robust than 'linear'
+  interp = 'nearest';
+  extrap = 'nearest';
 
   % get the mask
   mask = ~isnan(imtarget);
@@ -49,7 +53,7 @@ function phi = main_inverse(imsource, imtarget)
   % get the interpolant
   xx1 = x1(2:end-1,2:end-1);
   xx2 = x2(2:end-1,2:end-1);
-  F = griddedInterpolant(xx1, xx2, imtarget_fill, 'linear', 'nearest');
+  F = griddedInterpolant(xx1, xx2, imtarget_fill, interp, extrap);
 
   % get the grid data point on the source plane
   xx1 = x1(2:end-1,2:end-1);
@@ -71,11 +75,13 @@ function phi = main_inverse(imsource, imtarget)
   f = inf;
   fmin = inf;
   umin = 0;
+  last_niter_update = 0;
   while 1
     [f, du] = func_obj(u);
     if f < fmin
       fmin = f;
       umin = u;
+      last_niter_update = niter;
     end
     if f > f0 && step > minstep
       step = step / 2;
@@ -107,6 +113,9 @@ function phi = main_inverse(imsource, imtarget)
     end
     if toc(stime) > max_time
       break;
+    end
+    if niter - last_niter_update > max_niter_no_update
+      break
     end
   end
   fprintf('%6d    %.6e     %.3e    %.3es\n', niter, f, step, toc(stime));
