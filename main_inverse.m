@@ -30,6 +30,7 @@ function phi = main_inverse(imsource, imtarget)
   minstep = 1e-3;
   max_time = 60*5;
   max_niter_no_update = 5000;
+  alpha = 0.1;
   % it seems that nearest neighbor interpolation is more robust than 'linear'
   interp = 'nearest';
   extrap = 'nearest';
@@ -60,8 +61,29 @@ function phi = main_inverse(imsource, imtarget)
   xx2 = x2(2:end-1,2:end-1);
 
   % define the objective function and do L-BFGS optimization
-  stime = tic;
   func_obj = @(u) func_grad(F, imsource, u);
+
+  % minimize the objective
+  options.max_niter = max_niter;
+  options.rel_tol = rel_tol;
+  options.max_time = max_time;
+  options.max_niter_no_update = max_niter_no_update;
+  options.minstep = minstep;
+  options.refresh_interval = refresh_interval;
+  options.alpha = alpha;
+  [umin, fmin] = minimize(func_obj, u0, options);
+  % opts.MaxFunEvals = 50000;
+  % opts.Method = 'csd';
+  % [umin, fmin] = minFunc(func_obj, u0, opts);
+
+  phi = u_init - reshape(umin, size(u_init));
+  phi = phi(2:end-1, 2:end-1);
+end
+
+function [umin, fmin] = minimize(func_obj, u0, options)
+  minstep = options.minstep;
+  alpha = options.alpha;
+  stime = tic;
 
   % search the step size
   [f0, du0] = func_obj(u0);
@@ -89,14 +111,14 @@ function phi = main_inverse(imsource, imtarget)
     else
       f0 = f;
       u0 = u;
-      du0 = du;
+      du0 = du * alpha + du0 * (1-alpha);
       u = u0 - step * du0;
     end
     niter = niter + 1;
     if step < minstep
       step = minstep;
     end
-    if mod(niter, refresh_interval) == 0 || niter == 1
+    if mod(niter, options.refresh_interval) == 0 || niter == 1
       step = step_search(func_obj, u0, f0, du0, step);
       if step < minstep
         step = minstep;
@@ -105,23 +127,20 @@ function phi = main_inverse(imsource, imtarget)
     end
 
     % stopping conditions
-    if niter > max_niter
+    if niter > options.max_niter
       break;
     end
-    if fmin / finit < rel_tol
+    if fmin / finit < options.rel_tol
       break;
     end
-    if toc(stime) > max_time
+    if toc(stime) > options.max_time
       break;
     end
-    if niter - last_niter_update > max_niter_no_update
+    if niter - last_niter_update > options.max_niter_no_update
       break
     end
   end
   fprintf('%6d    %.6e     %.3e    %.3es\n', niter, f, step, toc(stime));
-
-  phi = u_init - reshape(umin, size(u_init));
-  phi = phi(2:end-1, 2:end-1);
 end
 
 function [f,df] = func_grad(F, imsource, u)
