@@ -1,4 +1,4 @@
-function phi = main_inverse(imsource, imtarget)
+function phi = main_inverse(imsource, imtarget, options)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Retrieving the deflection potential given the source image (i.e. the image
   % without the deflection) and the target image (i.e. the image with the
@@ -24,16 +24,50 @@ function phi = main_inverse(imsource, imtarget)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % options
-  refresh_interval = 100;
-  rel_tol = 1e-3;
-  max_niter = 50000;
-  minstep = 1e-3;
-  max_time = 60*5;
-  max_niter_no_update = 5000;
-  alpha = 0.1;
+  defopt.refresh_interval = 100;
+  defopt.rel_tol = 1e-3;
+  defopt.max_niter = 50000;
+  defopt.minstep = 1e-3;
+  defopt.max_time = 60*5;
+  defopt.max_niter_no_update = 5000;
+  defopt.alpha = 0.1;
   % it seems that nearest neighbor interpolation is more robust than 'linear'
-  interp = 'nearest';
-  extrap = 'nearest';
+  defopt.interp = 'nearest';
+  defopt.extrap = 'nearest';
+
+  % get the options and default options field names
+  defopt_fields = fieldnames(defopt);
+  opt_fields = fieldnames(options);
+
+  % if there is a defopt field that is not in opt field, set opt field to default
+  for idef = 1:length(defopt_fields)
+    defopt_field = defopt_fields{idef};
+    found = false;
+
+    for io = 1:length(opt_fields)
+      opt_field = opt_fields{io};
+      if strcmp(opt_field, defopt_field)
+        found = true;
+        break;
+      end
+    end
+
+    % if not found, then set the default value
+    if (~found)
+      options = setfield(options, defopt_field, getfield(defopt, defopt_field));
+    end
+  end
+
+  % set the parameter names
+  refresh_interval = options.refresh_interval;
+  rel_tol = options.rel_tol;
+  max_niter = options.max_niter;
+  minstep = options.minstep;
+  max_time = options.max_time;
+  max_niter_no_update = options.max_niter_no_update;
+  alpha = options.alpha;
+  interp = options.interp;
+  extrap = options.extrap;
 
   % get the mask
   mask = ~isnan(imtarget);
