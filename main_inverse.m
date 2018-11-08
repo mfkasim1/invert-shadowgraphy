@@ -23,6 +23,10 @@ function phi = main_inverse(imsource, imtarget, options)
   % Author: Muhammad F. Kasim (University of Oxford, 2018)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+  if (nargin < 3)
+      options.interp = 'linear';
+  end
+
   % options
   defopt.refresh_interval = 100;
   defopt.rel_tol = 1e-3;
