@@ -123,7 +123,7 @@ function fast_invert_shadowgraphy(filename, varargin)
 
     fprintf('Retrieving the deflection potential from the source and target maps\n');
     bbbb = tic;
-    PhiI = main_inverse(sourceMap, targetMap);
+    PhiI = main_inverse(sourceMap, targetMap,options);
     main_inverse_time = toc(bbbb);
 
     fprintf('Getting the reconstructed image from the retrieved potential\n');
